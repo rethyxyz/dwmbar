@@ -1,4 +1,5 @@
 #!/bin/bash
+
 #
 #	By: Brody Rethy
 #	Website: https://rethy.xyz
@@ -9,16 +10,20 @@
 #	An extensible status bar for dwm.
 #
 
+#
 # I want to make this bar dynamic:
 #	1. Get $INTERFACE from arg.
 #	2. Check if device has battery/is a laptop
+#
 
+#
 # TODO Get args in a loop
 # TODO If needed ones empty (AKA not given) exit, or prompt again.
+#
 
 DEVICE=$1
 
-# Set up vars according to device
+# DEFINE VARS FOR DEVICE
 case $DEVICE in
 	laptop | Laptop | e550 | E550) INTERFACE="wlp4s0" ;;
 	desktop | Desktop) INTERFACE="enp2s0" ;;
@@ -33,7 +38,7 @@ get_song_left() {
 
 	if [[ "$STATE" = "[paused]" ]]
 	then
-		echo "$STATE"
+		echo "[PAUSED]"
 	else
 		echo "$TIME_LEFT"
 	fi
