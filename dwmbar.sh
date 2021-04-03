@@ -11,15 +11,16 @@
 #
 
 #
-# I want to make this bar dynamic:
-#	1. Get $INTERFACE from arg.
-#	2. Check if device has battery/is a laptop
-#
-
-#
 # TODO Get args in a loop
 # TODO If needed ones empty (AKA not given) exit, or prompt again.
 #
+
+display_help() {
+	echo "dwmbar.sh [DEVICE]"
+	echo ""
+	echo "Takes one of two args: laptop, or desktop. To start this upon dwm launch, put this inside your ~/.xinitrc."
+	exit 0
+}
 
 DEVICE=$1
 
@@ -27,20 +28,24 @@ DEVICE=$1
 case $DEVICE in
 	laptop | Laptop | e550 | E550) INTERFACE="wlp4s0" ;;
 	desktop | Desktop) INTERFACE="enp2s0" ;;
-	*) echo ":: Not a valid device"; exit 1 ;;
+	-h | --help) display_help ;;
+	*)
+		echo ":: Not a valid device"
+		echo ""
+		echo "Type dwmbar.sh -h for assistance"
+		exit 1
+		;;
 esac
 
 get_song_left() {
 	STATE=$(/usr/bin/mpc -p 6601 | sed -n 2p | awk '{print $1}')
-	TIME_LEFT=$(/usr/bin/mpc -p 6601 | sed -n 2p | awk '{print $3}')
-	# TODO Do something with this in the future
-	#PLAYLIST_NUM=$(mpc -p 6601 | sed -n 2p | awk '{print $2}')
+	TIME_REMAINING=$(/usr/bin/mpc -p 6601 | sed -n 2p | awk '{print $3}')
 
 	if [[ "$STATE" = "[paused]" ]]
 	then
 		echo "[PAUSED]"
 	else
-		echo "$TIME_LEFT"
+		echo "$TIME_REMAINING"
 	fi
 }
 
@@ -57,7 +62,17 @@ get_vol() {
 }
 
 # TODO Check battery state
-get_bat() { BAT="$(awk '{ sum += $1 } END { print sum }' /sys/class/power_supply/BAT*/capacity)"; echo "$BAT"%; }
+get_bat() {
+	BAT="$(awk '{ sum += $1 } END { print sum }' /sys/class/power_supply/BAT*/capacity)"
+	STATUS="$(cat /sys/class/power_supply/BAT*/status)"
+
+	if [[ "$STATUS" = "Charging" ]]
+	then
+		echo [C] "$BAT"%
+	else
+		echo "$BAT"%
+	fi
+}
 get_date() { date +'%m-%d'; }
 get_mem_free() { MEM_FREE=$(($(grep -m1 'MemAvailable:' /proc/meminfo | awk '{print $2}') / 1024)); echo "$MEM_FREE"MB; }
 get_net_info() { ip addr | awk "/$INTERFACE/ && /inet/" | awk '{print $2}'; }
