@@ -1,13 +1,13 @@
 #!/bin/bash
 
 #
-#	By: Brody Rethy
-#	Website: https://rethy.xyz
+## By: Brody Rethy
+## Website: https://rethy.xyz
 #
-#	Name: dwmbar.sh
+## Name: dwmbar.sh
 #
-#	Summary:
-#	An extensible status bar for dwm.
+## Summary:
+## An extensible status bar for dwm.
 #
 
 #
@@ -31,8 +31,8 @@ case $DEVICE in
 	-h | --help) display_help; exit 0 ;;
 	*)
 		echo ":: Not a valid device"
-		echo ""
-		echo "Type dwmbar.sh -h for assistance"
+		echo "::"
+		echo ":: Type dwmbar.sh -h for assistance"
 		exit 1
 		;;
 esac
@@ -84,7 +84,7 @@ get_bat() {
 
 	if [[ "$STATUS" = "Charging" ]]
 	then
-		echo "[C] $BAT_LEVEL%"
+		echo "[C] $BAT_LEVEL%"
 	else
 		if [[ $BAT_LEVEL -lt 25 ]]
 		then
@@ -101,14 +101,14 @@ get_bat() {
 get_mem_free() {
 	MEM_FREE=$(($(grep -m1 'MemAvailable:' /proc/meminfo | awk '{print $2}') / 1024))
 
-	if [[ "$MEM_FREE" -lt 2500 ]]
+	if [[ $MEM_FREE -gt 2500 ]]
+	then
+		echo -e "$MEM_FREE"MB
+	elif [[ $MEM_FREE -gt 1500 ]]
 	then
 		echo -e "$MEM_FREE""MB"
-	elif [[ "$MEM_FREE" -lt 1500 ]]
-	then
-		echo -e "$MEM_FREE""MB"
 	else
-		echo -e "$MEM_FREE"MB
+		echo -e "$MEM_FREE""MB"
 	fi
 }
 
@@ -122,13 +122,27 @@ get_temp() {
 	then
 		echo -e "$TEMP""C"
 	else
-		echo -e "$TEMP"C
+		echo -e "$TEMP""C"
 	fi
 }
 
+get_ip_addr() {
+	IP_ADDR=$(ip addr | awk "/$INTERFACE/ && /inet/" | awk '{print $2}')
+
+	if [[ "$IP_ADDR" ]]
+	then
+		echo -e "$IP_ADDR"
+	else
+		echo -e "[OFFLINE]"
+	fi
+}
+
+get_song() {
+	SONG_TITLE=$(/usr/bin/mpc -p 6601 current)
+	echo -e "$SONG_TITLE"
+}
+
 get_date() { date +'%m-%d'; }
-get_net_info() { ip addr | awk "/$INTERFACE/ && /inet/" | awk '{print $2}'; }
-get_song() { /usr/bin/mpc -p 6601 current; }
 get_time() { date +"%r"; }
 
 SEPARATOR="╬"
@@ -137,13 +151,13 @@ if [[ "$DEVICE" = "laptop" ]]
 then
 	while true
 	do
-		xsetroot -name "$(get_song_left) $(get_song) $SEPARATOR $(get_vol) $SEPARATOR $(get_mem_free) $SEPARATOR $(get_temp) $SEPARATOR $(get_net_info) $SEPARATOR $(get_bat) $SEPARATOR $(get_date) $SEPARATOR $(get_time)"
+		xsetroot -name "$(get_song_left) $(get_song) $SEPARATOR $(get_vol) $SEPARATOR $(get_mem_free) $SEPARATOR $(get_temp) $SEPARATOR $(get_ip_addr) $SEPARATOR $(get_bat) $SEPARATOR $(get_date) $SEPARATOR $(get_time)"
 		sleep 0.2
 	done
 else
 	while true
 	do
-		xsetroot -name "$(get_song_left) $(get_song) $SEPARATOR $(get_vol) $SEPARATOR $(get_mem_free) $SEPARATOR $(get_net_info) $SEPARATOR $(get_date) $SEPARATOR $(get_time)"
+		xsetroot -name "$(get_song_left) $(get_song) $SEPARATOR $(get_vol) $SEPARATOR $(get_mem_free) $SEPARATOR $(get_ip_addr) $SEPARATOR $(get_date) $SEPARATOR $(get_time)"
 		sleep 0.2
 	done
 fi
