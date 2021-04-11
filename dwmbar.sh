@@ -16,10 +16,10 @@
 #
 
 display_help() {
-	echo "dwmbar.sh [DEVICE]"
-	echo ""
-	echo "Takes one of two args: laptop, or desktop."
-	echo "To start this upon dwm launch, put this inside your ~/.xinitrc with the [DEVICE] arg (as shown above)."
+	/usr/bin/echo "dwmbar.sh [DEVICE]"
+	/usr/bin/echo ""
+	/usr/bin/echo "Takes one of two args: laptop, or desktop."
+	/usr/bin/echo "To start this upon dwm launch, put this inside your ~/.xinitrc with the [DEVICE] arg (as shown above)."
 }
 
 DEVICE=$1
@@ -30,9 +30,9 @@ case $DEVICE in
 	desktop | Desktop) INTERFACE="enp2s0" ;;
 	-h | --help) display_help; exit 0 ;;
 	*)
-		echo ":: Not a valid device"
-		echo "::"
-		echo ":: Type dwmbar.sh -h for assistance"
+		/usr/bin/echo ":: Not a valid device"
+		/usr/bin/echo "::"
+		/usr/bin/echo ":: Type dwmbar.sh -h for assistance"
 		exit 1
 		;;
 esac
@@ -41,39 +41,42 @@ get_song_left() {
 	STATE=$(/usr/bin/mpc -p 6601 | sed -n 2p | awk '{print $1}')
 	TIME_REMAINING=$(/usr/bin/mpc -p 6601 | sed -n 2p | awk '{print $3}')
 
-	if [[ "$STATE" = "[paused]" ]]
-	then
-		echo -e "[PAUSED]"
-	else
-		echo -e "$TIME_REMAINING"
-	fi
+	## Theoretically faster than an if statement, though I haven't tested it yet.
+	case $STATE in
+		"[paused]") /usr/bin/echo -e "[PAUSED]" ;;
+		*) /usr/bin/echo -e "$TIME_REMAINING" ;;
+	esac
+
+#	if i[ "$STATE" = "[paused]" ]]
+#	then
+#	else
+#	fi
 }
 
 get_vol() {
-	# I can cut down on redundancy here by doing this:
-	# status=""
-	# status+="\x03 BAT: $batperc"
-	# status+="\x04 BAT: $batperc"
-	# status+="\x01| "+$(date)
-	# echo -e $status
-
    	VOL=$(pulsemixer --get-volume | awk '{print $2}')
 	VOL_STATE=$(pulsemixer --get-mute)
 
-	if [[ "$VOL_STATE" = 1 ]]
-	then
-		echo -e "[MUTED]"
-	else
-		if [[ "$VOL" -lt 25 ]]
-		then
-			echo -e "$VOL%"
-		elif [[ "$VOL" -lt 50 ]]
-		then
-			echo -e "$VOL%"
-		else
-			echo -e "$VOL%"
-		fi
-	fi
+	case $VOL_STATE in
+		1) /usr/bin/echo -e "[MUTED]" ;;
+
+		*)
+			if [[ "$VOL" -lt 25 ]]
+			then
+				/usr/bin/echo -e "$VOL%"
+			elif [[ "$VOL" -lt 50 ]]
+			then
+				/usr/bin/echo -e "$VOL%"
+			else
+				/usr/bin/echo -e "$VOL%"
+			fi
+			;;
+	esac
+
+#if [[ "$VOL_STATE" = 1 ]]
+#then
+#else
+#fi
 }
 
 # TODO Check battery state
@@ -82,20 +85,27 @@ get_bat() {
 	BAT_LEVEL="$(awk '{ sum += $1 } END { print sum }' /sys/class/power_supply/BAT*/capacity)"
 	STATUS="$(cat /sys/class/power_supply/BAT*/status)"
 
-	if [[ "$STATUS" = "Charging" ]]
-	then
-		echo "[C] $BAT_LEVEL%"
-	else
-		if [[ $BAT_LEVEL -lt 25 ]]
-		then
-			echo "$BAT_LEVEL%"
-		elif [[ $BAT_LEVEL -lt 50 ]]
-		then
-			echo "$BAT_LEVEL%"
-		else
-			echo "$BAT_LEVEL"%
-		fi
-	fi
+	case $STATUS in
+		Charging)
+			/usr/bin/echo "[C] $BAT_LEVEL%"
+			;;
+		*)
+			if [[ $BAT_LEVEL -lt 25 ]]
+			then
+				/usr/bin/echo "$BAT_LEVEL%"
+			elif [[ $BAT_LEVEL -lt 50 ]]
+			then
+				/usr/bin/echo "$BAT_LEVEL%"
+			else
+				/usr/bin/echo "$BAT_LEVEL"%
+			fi
+			;;
+	esac
+
+#if [[ "$STATUS" = "Charging" ]]
+#then
+#else
+#fi
 }
 
 get_mem_free() {
@@ -103,12 +113,12 @@ get_mem_free() {
 
 	if [[ $MEM_FREE -gt 2500 ]]
 	then
-		echo -e "$MEM_FREE"MB
+		/usr/bin/echo -e "$MEM_FREE"MB
 	elif [[ $MEM_FREE -gt 1500 ]]
 	then
-		echo -e "$MEM_FREE""MB"
+		/usr/bin/echo -e "$MEM_FREE""MB"
 	else
-		echo -e "$MEM_FREE""MB"
+		/usr/bin/echo -e "$MEM_FREE""MB"
 	fi
 }
 
@@ -117,12 +127,12 @@ get_temp() {
 
 	if [[ "$TEMP" -gt 80 ]]
 	then
-		echo -e "$TEMP""C"
+		/usr/bin/echo -e "$TEMP""C"
 	elif [[ "$TEMP" -gt 60 ]]
 	then
-		echo -e "$TEMP""C"
+		/usr/bin/echo -e "$TEMP""C"
 	else
-		echo -e "$TEMP""C"
+		/usr/bin/echo -e "$TEMP""C"
 	fi
 }
 
@@ -131,33 +141,42 @@ get_ip_addr() {
 
 	if [[ "$IP_ADDR" ]]
 	then
-		echo -e "$IP_ADDR"
+		/usr/bin/echo -e "$IP_ADDR"
 	else
-		echo -e "[OFFLINE]"
+		/usr/bin/echo -e "[OFFLINE]"
 	fi
 }
 
 get_song() {
 	SONG_TITLE=$(/usr/bin/mpc -p 6601 current)
-	echo -e "$SONG_TITLE"
+	/usr/bin/echo -e "$SONG_TITLE"
 }
 
 get_date() { date +'%m-%d'; }
+
 get_time() { date +"%r"; }
 
 SEPARATOR="╬"
 
-if [[ "$DEVICE" = "laptop" ]]
-then
-	while true
-	do
-		xsetroot -name "$(get_song_left) $(get_song) $SEPARATOR $(get_vol) $SEPARATOR $(get_mem_free) $SEPARATOR $(get_temp) $SEPARATOR $(get_ip_addr) $SEPARATOR $(get_bat) $SEPARATOR $(get_date) $SEPARATOR $(get_time)"
-		sleep 0.2
-	done
-else
-	while true
-	do
-		xsetroot -name "$(get_song_left) $(get_song) $SEPARATOR $(get_vol) $SEPARATOR $(get_mem_free) $SEPARATOR $(get_ip_addr) $SEPARATOR $(get_date) $SEPARATOR $(get_time)"
-		sleep 0.2
-	done
-fi
+case $DEVICE in
+	laptop)
+		while true
+		do
+			xsetroot -name "$(get_song_left) $(get_song) $SEPARATOR $(get_vol) $SEPARATOR $(get_mem_free) $SEPARATOR $(get_temp) $SEPARATOR $(get_ip_addr) $SEPARATOR $(get_bat) $SEPARATOR $(get_date) $SEPARATOR $(get_time)"
+			sleep 0.2
+		done
+		;;
+
+	desktop)
+		while true
+		do
+			xsetroot -name "$(get_song_left) $(get_song) $SEPARATOR $(get_vol) $SEPARATOR $(get_mem_free) $SEPARATOR $(get_ip_addr) $SEPARATOR $(get_date) $SEPARATOR $(get_time)"
+			sleep 0.2
+		done
+		;;
+esac
+
+#if [[ "$DEVICE" = "laptop" ]]
+#then
+#else
+#fi
