@@ -36,7 +36,6 @@ get_vol() {
 
 	case "$VOL_STATE" in
 		1) /usr/bin/echo -e "[MUTED]" ;;
-
 		*)
 			if [[ "$VOL" -lt 25 ]]
 			then
@@ -47,7 +46,7 @@ get_vol() {
 			else
 				/usr/bin/echo -e "$VOL%"
 			fi
-			;;
+		;;
 	esac
 }
 
@@ -56,9 +55,7 @@ get_bat() {
 	STATUS="$(cat /sys/class/power_supply/BAT*/status)"
 
 	case "$STATUS" in
-		Charging)
-			/usr/bin/echo "[C] $BAT_LEVEL%"
-			;;
+		Charging) /usr/bin/echo "[C] $BAT_LEVEL%" ;;
 		*)
 			if [[ $BAT_LEVEL -lt 25 ]]
 			then
@@ -69,7 +66,7 @@ get_bat() {
 			else
 				/usr/bin/echo "$BAT_LEVEL"%
 			fi
-			;;
+		;;
 	esac
 }
 
@@ -124,7 +121,7 @@ case $DEVICE in
 			xsetroot -name "$(get_song_left) $(get_song) $SEPARATOR $(get_vol) $SEPARATOR $(get_mem_free) $SEPARATOR $(get_temp) $SEPARATOR $(get_ip_addr) $SEPARATOR $(get_bat) $SEPARATOR $(get_date) $SEPARATOR $(get_time)"
 			sleep 0.2
 		done
-		;;
+	;;
 
 	desktop | Desktop)
 		while true
@@ -132,8 +129,7 @@ case $DEVICE in
 			xsetroot -name "$(get_song_left) $(get_song) $SEPARATOR $(get_vol) $SEPARATOR $(get_mem_free) $SEPARATOR $(get_ip_addr) $SEPARATOR $(get_date) $SEPARATOR $(get_time)"
 			sleep 0.2
 		done
-		;;
-	*)
-		echo ":: Not a valid device"
-		;;
+	;;
+
+	*) echo ":: Not a valid device" ;;
 esac
