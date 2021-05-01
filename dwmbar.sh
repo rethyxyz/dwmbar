@@ -11,7 +11,7 @@
 #
 
 # Insert your network interface here.
-INTERFACE="enp2s0"
+INTERFACE="enp3s0f0"
 # Insert your device type (laptop or desktop) here.
 DEVICE="desktop"
 # You can change this to any symbol, as long as your font supports it.
@@ -37,10 +37,10 @@ get_vol() {
 	case "$VOL_STATE" in
 		1) /usr/bin/echo -e "[MUTED]" ;;
 		*)
-			if [[ "$VOL" -lt 25 ]]
+			if [ "$VOL" -lt 25 ]
 			then
 				/usr/bin/echo -e "$VOL%"
-			elif [[ "$VOL" -lt 50 ]]
+			elif [ "$VOL" -lt 50 ]
 			then
 				/usr/bin/echo -e "$VOL%"
 			else
@@ -57,10 +57,10 @@ get_bat() {
 	case "$STATUS" in
 		Charging) /usr/bin/echo "[C] $BAT_LEVEL%" ;;
 		*)
-			if [[ $BAT_LEVEL -lt 25 ]]
+			if [ "$BAT_LEVEL" -lt 25 ]
 			then
 				/usr/bin/echo "$BAT_LEVEL%"
-			elif [[ $BAT_LEVEL -lt 50 ]]
+			elif [ "$BAT_LEVEL" -lt 50 ]
 			then
 				/usr/bin/echo "$BAT_LEVEL%"
 			else
@@ -73,10 +73,10 @@ get_bat() {
 get_mem_free() {
 	MEM_FREE=$(($(grep -m1 'MemAvailable:' /proc/meminfo | awk '{print $2}') / 1024))
 
-	if [[ "$MEM_FREE" -gt 2500 ]]
+	if [ "$MEM_FREE" -gt 2500 ]
 	then
 		/usr/bin/echo -e "$MEM_FREE"MB
-	elif [[ "$MEM_FREE" -gt 1500 ]]
+	elif [ "$MEM_FREE" -gt 1500 ]
 	then
 		/usr/bin/echo -e "$MEM_FREE""MB"
 	else
@@ -87,10 +87,10 @@ get_mem_free() {
 get_temp() {
 	TEMP=$(head -c 2 /sys/class/thermal/thermal_zone0/temp)
 
-	if [[ "$TEMP" -gt 80 ]]
+	if [ "$TEMP" -gt 80 ]
 	then
 		/usr/bin/echo -e "$TEMP""C"
-	elif [[ "$TEMP" -gt 60 ]]
+	elif [ "$TEMP" -gt 60 ]
 	then
 		/usr/bin/echo -e "$TEMP""C"
 	else
@@ -101,7 +101,7 @@ get_temp() {
 get_ip_addr() {
 	IP_ADDR=$(ip addr | awk "/$INTERFACE/ && /inet/" | awk '{print $2}')
 
-	if [[ "$IP_ADDR" ]]
+	if [ "$IP_ADDR" ]
 	then
 		/usr/bin/echo -e "$IP_ADDR"
 	else
