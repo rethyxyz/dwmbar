@@ -104,16 +104,14 @@ get_ip_addr() {
 
 case $DEVICE in
 	laptop | Laptop)
-		while true
-		do
+		while true; do
 			xsetroot -name "$(get_mpd_remaining) $(get_mpd_track) $SEPARATOR $(get_vol_perc) $SEPARATOR $(get_mem_free) $SEPARATOR $(get_temp) $SEPARATOR $(get_ip_addr) $SEPARATOR $(get_bat_perc) $SEPARATOR $(get_date) $SEPARATOR $(get_time)"
 			sleep 0.2
 		done
 		;;
 
 	desktop | Desktop)
-		while true
-		do
+		while true; do
 			xsetroot -name "$(get_mpd_remaining) $(get_mpd_track) $SEPARATOR $(get_vol_perc) $SEPARATOR $(get_mem_free) $SEPARATOR $(get_ip_addr) $SEPARATOR $(get_date) $SEPARATOR $(get_time)"
 			sleep 0.2
 		done
