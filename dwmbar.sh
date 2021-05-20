@@ -12,9 +12,9 @@
 #
 
 # Your primary network interface goes here.
-INTERFACE="enp2s0"
+INTERFACE="wlp4s0"
 # Your device type (laptop or desktop) goes here (displays bat info if laptop).
-DEVICE="desktop"
+DEVICE="laptop"
 # This can be any character, as long as your font supports it.
 SEPARATOR="╬"
 
@@ -27,8 +27,8 @@ get_mpd_remaining() {
     TIME_REMAINING=$(/usr/bin/mpc -p 6601 | sed -n 2p | awk '{print $3}')
 
     case "$STATE" in
-        "[paused]") /usr/bin/echo -e "[PAUSED]" ;;
-        *) /usr/bin/echo -e "$TIME_REMAINING" ;;
+        "[paused]") /usr/bin/printf "[PAUSED]" ;;
+        *) /usr/bin/printf "$TIME_REMAINING" ;;
     esac
 }
 
@@ -37,16 +37,16 @@ get_vol_perc() {
     VOL_STATE=$(pulsemixer --get-mute)
 
     case "$VOL_STATE" in
-        1) /usr/bin/echo -e "[MUTED]" ;;
+        1) /usr/bin/printf "[MUTED]" ;;
         *)
             if [ "$VOL" -lt 25 ]; then
-                /usr/bin/echo -e "$VOL%"
+                /usr/bin/printf "$VOL%%"
             elif [ "$VOL" -lt 50 ]; then
-                /usr/bin/echo -e "$VOL%"
+                /usr/bin/printf "$VOL%%"
             else
-                /usr/bin/echo -e "$VOL%"
+                /usr/bin/printf "$VOL%%"
             fi
-            ;;
+        ;;
     esac
 }
 
@@ -55,16 +55,16 @@ get_bat_perc() {
     STATUS="$(cat /sys/class/power_supply/BAT*/status)"
 
     case "$STATUS" in
-        Charging) /usr/bin/echo "[C] $BAT_LEVEL%" ;;
+        Charging) /usr/bin/printf "[C] $BAT_LEVEL%%" ;;
         *)
             if [ "$BAT_LEVEL" -lt 25 ]; then
-                /usr/bin/echo "$BAT_LEVEL%"
+                /usr/bin/printf "$BAT_LEVEL%%"
             elif [ "$BAT_LEVEL" -lt 50 ]; then
-                /usr/bin/echo "$BAT_LEVEL%"
+                /usr/bin/printf "$BAT_LEVEL%%"
             else
-                /usr/bin/echo "$BAT_LEVEL"%
+                /usr/bin/printf "$BAT_LEVEL%%"
             fi
-            ;;
+        ;;
     esac
 }
 
@@ -72,11 +72,11 @@ get_mem_free() {
     MEM_FREE=$(($(grep -m1 'MemAvailable:' /proc/meminfo | awk '{print $2}') / 1024))
 
     if [ "$MEM_FREE" -gt 2500 ]; then
-        /usr/bin/echo -e "$MEM_FREE"MB
+        /usr/bin/printf "$MEM_FREE"MB
     elif [ "$MEM_FREE" -gt 1500 ]; then
-        /usr/bin/echo -e "$MEM_FREE""MB"
+        /usr/bin/printf "$MEM_FREE""MB"
     else
-        /usr/bin/echo -e "$MEM_FREE""MB"
+        /usr/bin/printf "$MEM_FREE""MB"
     fi
 }
 
@@ -84,11 +84,11 @@ get_temp() {
     TEMP=$(head -c 2 /sys/class/thermal/thermal_zone0/temp)
 
     if [ "$TEMP" -gt 80 ]; then
-        /usr/bin/echo -e "$TEMP""C"
+        /usr/bin/printf "$TEMP""C"
     elif [ "$TEMP" -gt 60 ]; then
-        /usr/bin/echo -e "$TEMP""C"
+        /usr/bin/printf "$TEMP""C"
     else
-        /usr/bin/echo -e "$TEMP""C"
+        /usr/bin/printf "$TEMP""C"
     fi
 }
 
@@ -96,26 +96,26 @@ get_ip_addr() {
     IP_ADDR=$(ip addr | awk "/$INTERFACE/ && /inet/" | awk '{print $2}')
 
     if [ "$IP_ADDR" ]; then
-        /usr/bin/echo -e "$IP_ADDR"
+        /usr/bin/printf "$IP_ADDR"
     else
-        /usr/bin/echo -e "[OFFLINE]"
+        /usr/bin/printf "[OFFLINE]"
     fi
 }
 
-case $DEVICE in
+case "$DEVICE" in
     laptop | Laptop)
         while true; do
             xsetroot -name "$(get_mpd_remaining) $(get_mpd_track) $SEPARATOR $(get_vol_perc) $SEPARATOR $(get_mem_free) $SEPARATOR $(get_temp) $SEPARATOR $(get_ip_addr) $SEPARATOR $(get_bat_perc) $SEPARATOR $(get_date) $SEPARATOR $(get_time)"
             sleep 0.2
         done
-        ;;
+    ;;
 
     desktop | Desktop)
         while true; do
             xsetroot -name "$(get_mpd_remaining) $(get_mpd_track) $SEPARATOR $(get_vol_perc) $SEPARATOR $(get_mem_free) $SEPARATOR $(get_ip_addr) $SEPARATOR $(get_date) $SEPARATOR $(get_time)"
             sleep 0.2
         done
-        ;;
+    ;;
 
-    *) echo ":: Not a valid device" ;;
+    *) printf ":: \"$DEVICE\" not a valid device\n"; exit 1 ;;
 esac
