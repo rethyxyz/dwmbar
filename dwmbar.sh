@@ -11,12 +11,22 @@
 # the code below.
 #
 
+########################
+# VARIABLE DEFINITIONS #
+########################
+
 # Your primary network interface goes here.
-INTERFACE="wlp4s0"
+INTERFACE="enp2s0"
 # Your device type (laptop or desktop) goes here (displays bat info if laptop).
-DEVICE="laptop"
+DEVICE="desktop"
 # This can be any character, as long as your font supports it.
 SEPARATOR="╬"
+
+
+
+#############
+# FUNCTIONS #
+#############
 
 get_time() { date +"%r"; }
 get_date() { date +'%m-%d'; }
@@ -102,6 +112,12 @@ get_ip_addr() {
     fi
 }
 
+
+
+########
+# MAIN #
+########
+
 case "$DEVICE" in
     laptop | Laptop)
         while true; do
@@ -117,5 +133,5 @@ case "$DEVICE" in
         done
     ;;
 
-    *) printf ":: \"$DEVICE\" not a valid device\n"; exit 1 ;;
+    *) printf ":: \"%s\" not a valid device\n" "$DEVICE"; exit 1 ;;
 esac
