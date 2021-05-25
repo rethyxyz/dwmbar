@@ -6,19 +6,27 @@
 # Name: dwmbar.sh
 #
 # Summary:
-# A modular status bar for dwm. Supports color using specific keycodes. See
+# A modular status bar for dwm. Displays color using specific keycodes. See
 # https://dwm.suckless.org/patches/statuscolors/ on how, or look at and study
-# the code below.
+# the code below. Without statuscolors patch, useless symbols are displayed in
+# their place. It's recommended to install the statuscolors patch prior to
+# using this script.
 #
 
 ########################
 # VARIABLE DEFINITIONS #
 ########################
 
-# Your primary network interface goes here.
-INTERFACE="enp2s0"
+# Primary network interface here.
+PRIMARY_INTERFACE="wlp4s0"
+
+# Secondary network interface here. This is used as backup in-case the first
+# goes down, or if you want another one to be displayed.
+SECONDARY_INTERFACE="enp0s25"
+
 # Your device type (laptop or desktop) goes here (displays bat info if laptop).
-DEVICE="desktop"
+DEVICE="laptop"
+
 # This can be any character, as long as your font supports it.
 SEPARATOR="╬"
 
@@ -29,7 +37,9 @@ SEPARATOR="╬"
 #############
 
 get_time() { date +"%r"; }
+
 get_date() { date +'%m-%d'; }
+
 get_mpd_track() { /usr/bin/mpc -p 6601 current; }
 
 get_mpd_remaining() {
@@ -38,7 +48,7 @@ get_mpd_remaining() {
 
     case "$STATE" in
         "[paused]") /usr/bin/printf "[PAUSED]" ;;
-        *) /usr/bin/printf "$TIME_REMAINING" ;;
+        *) /usr/bin/printf "%s" "$TIME_REMAINING" ;;
     esac
 }
 
@@ -50,7 +60,7 @@ get_vol_perc() {
         1) /usr/bin/printf "[MUTED]" ;;
         *)
             if [ "$VOL" -lt 25 ]; then
-                /usr/bin/printf "$VOL%%"
+                /usr/bin/printf "%s%%" "$VOL"
             elif [ "$VOL" -lt 50 ]; then
                 /usr/bin/printf "$VOL%%"
             else
@@ -61,7 +71,8 @@ get_vol_perc() {
 }
 
 get_bat_perc() {
-    BAT_LEVEL="$(awk '{ sum += $1 } END { print sum }' /sys/class/power_supply/BAT*/capacity)"
+    BAT_LEVEL="$(awk '{ sum += $1 } END { print sum }' \
+        /sys/class/power_supply/BAT*/capacity)"
     STATUS="$(cat /sys/class/power_supply/BAT*/status)"
 
     case "$STATUS" in
@@ -79,7 +90,8 @@ get_bat_perc() {
 }
 
 get_mem_free() {
-    MEM_FREE=$(($(grep -m1 'MemAvailable:' /proc/meminfo | awk '{print $2}') / 1024))
+    MEM_FREE=$(($(grep -m1 'MemAvailable:' /proc/meminfo \
+        | awk '{print $2}') / 1024))
 
     if [ "$MEM_FREE" -gt 2500 ]; then
         /usr/bin/printf "$MEM_FREE"MB
@@ -103,10 +115,18 @@ get_temp() {
 }
 
 get_ip_addr() {
-    IP_ADDR=$(ip addr | awk "/$INTERFACE/ && /inet/" | awk '{print $2}')
+    PRIMARY_INTERFACE_ADDR=$(ip addr \
+        | awk "/$PRIMARY_INTERFACE/ && /inet/" \
+        | awk '{print $2}')
 
-    if [ "$IP_ADDR" ]; then
-        /usr/bin/printf "$IP_ADDR"
+    SECONDARY_INTERFACE_ADDR=$(ip addr \
+        | awk "/$SECONDARY_INTERFACE/ && /inet/" \
+        | awk '{print $2}')
+
+    if [ "$PRIMARY_INTERFACE_ADDR" ]; then
+        /usr/bin/printf "$PRIMARY_INTERFACE_ADDR"
+    elif [ "$SECONDARY_INTERFACE_ADDR" ]; then
+        /usr/bin/printf "$SECONDARY_INTERFACE_ADDR"
     else
         /usr/bin/printf "[OFFLINE]"
     fi
