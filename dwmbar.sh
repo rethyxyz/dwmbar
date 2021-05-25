@@ -1,4 +1,5 @@
 #!/bin/bash
+
 #
 # By: Brody Rethy
 # Website: https://rethy.xyz
@@ -6,12 +7,20 @@
 # Name: dwmbar.sh
 #
 # Summary:
-# A modular status bar for dwm. Displays color using specific keycodes. See
+# A modular status bar for dwm. Displays color using specific key codes. See
 # https://dwm.suckless.org/patches/statuscolors/ on how, or look at and study
 # the code below. Without statuscolors patch, useless symbols are displayed in
 # their place. It's recommended to install the statuscolors patch prior to
 # using this script.
 #
+
+#########
+# TODOs #
+#########
+
+# TODO: Handle "repeat: " in get_mpd_remaining() function, or whatever it is.
+
+
 
 ########################
 # VARIABLE DEFINITIONS #
@@ -46,10 +55,14 @@ get_mpd_remaining() {
     STATE=$(/usr/bin/mpc -p 6601 | sed -n 2p | awk '{print $1}')
     TIME_REMAINING=$(/usr/bin/mpc -p 6601 | sed -n 2p | awk '{print $3}')
 
-    case "$STATE" in
-        "[paused]") /usr/bin/printf "[PAUSED]" ;;
-        *) /usr/bin/printf "%s" "$TIME_REMAINING" ;;
-    esac
+    if [ $TIME_REMAINING = "to" ] || [ $TIME_REMAINING = "repeat:" ]; then
+        /usr/bin/printf ""
+    else
+        case "$STATE" in
+            "[paused]") /usr/bin/printf "[PAUSED]" ;;
+            *) /usr/bin/printf "%s" "$TIME_REMAINING" ;;
+        esac
+    fi
 }
 
 get_vol_perc() {
