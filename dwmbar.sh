@@ -1,5 +1,4 @@
 #!/bin/bash
-
 #
 # By: Brody Rethy
 # Website: https://rethy.xyz
@@ -9,9 +8,11 @@
 # Summary:
 # A modular status bar for dwm. Displays color using specific key codes. See
 # https://dwm.suckless.org/patches/statuscolors/ on how, or look at and study
-# the code below. Without statuscolors patch, useless symbols are displayed in
-# their place. It's recommended to install the statuscolors patch prior to
-# using this script.
+# the code below.
+#
+# Without statuscolors patch, useless symbols are displayed in their place.
+# It's recommended to install the statuscolors patch prior to using this
+# script.
 #
 
 ########################
@@ -23,9 +24,11 @@ PRIMARY_INTERFACE="wlp4s0"
 # Secondary network interface here. This is used as backup in-case the first
 # goes down, or if you want another one to be displayed.
 SECONDARY_INTERFACE="enp0s25"
-# Your device type (laptop or desktop) goes here (displays bat info if laptop).
+# Your device type (laptop or desktop) goes here (displays bat info if laptop,
+# doesn't if desktop).
 DEVICE="laptop"
-# This can be any character, as long as your font supports it.
+# This can be any character, as long as your font supports it. Emojis should
+# work, too.
 SEPARATOR="╬"
 
 
