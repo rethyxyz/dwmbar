@@ -14,28 +14,17 @@
 # using this script.
 #
 
-#########
-# TODOs #
-#########
-
-# TODO: Handle "repeat: " in get_mpd_remaining() function, or whatever it is.
-
-
-
 ########################
 # VARIABLE DEFINITIONS #
 ########################
 
 # Primary network interface here.
 PRIMARY_INTERFACE="wlp4s0"
-
 # Secondary network interface here. This is used as backup in-case the first
 # goes down, or if you want another one to be displayed.
 SECONDARY_INTERFACE="enp0s25"
-
 # Your device type (laptop or desktop) goes here (displays bat info if laptop).
 DEVICE="laptop"
-
 # This can be any character, as long as your font supports it.
 SEPARATOR="╬"
 
@@ -55,7 +44,7 @@ get_mpd_remaining() {
     STATE=$(/usr/bin/mpc -p 6601 | sed -n 2p | awk '{print $1}')
     TIME_REMAINING=$(/usr/bin/mpc -p 6601 | sed -n 2p | awk '{print $3}')
 
-    if [ $TIME_REMAINING = "to" ] || [ $TIME_REMAINING = "repeat:" ]; then
+    if [ "$TIME_REMAINING" = "to" ] || [ "$TIME_REMAINING" = "repeat:" ]; then
         /usr/bin/printf ""
     else
         case "$STATE" in

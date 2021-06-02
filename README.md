@@ -3,8 +3,3 @@ A modular status bar for dwm. Written in Bash. Supports color using specific key
 
 ## Usage
 Simply change the **DEVICE**, **INTERFACE**, and **SEPARATOR** (optional) variables to fit your system configuration.
-
-Defaults are set to
-- **INTERFACE**="enp2s0"
-- **DEVICE**="desktop"
-- **SEPARATOR**="╬"
