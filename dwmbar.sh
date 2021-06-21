@@ -14,22 +14,33 @@
 # It's recommended to install the statuscolors patch prior to using this
 # script.
 #
+# I also recommend installing Noto Color Emoji to display emojis, as without,
+# you will see squares in their place.
+#
+
+########
+# TODO #
+########
+
+# Figure out the separator issues.
+
+
 
 ########################
 # VARIABLE DEFINITIONS #
 ########################
 
 # Primary network interface here.
-PRIMARY_INTERFACE="wlp4s0"
+PRIMARY_INTERFACE="wlp5s0"
 # Secondary network interface here. This is used as backup in-case the first
 # goes down, or if you want another one to be displayed.
-SECONDARY_INTERFACE="enp0s25"
+SECONDARY_INTERFACE="enp2s0"
 # Your device type (laptop or desktop) goes here (displays bat info if laptop,
 # doesn't if desktop).
-DEVICE="laptop"
+DEVICE="desktop"
 # This can be any character, as long as your font supports it. Emojis should
 # work, too.
-SEPARATOR="╬"
+SEPARATOR="|"
 
 
 
@@ -37,23 +48,31 @@ SEPARATOR="╬"
 # FUNCTIONS #
 #############
 
-get_time() { date +"%r"; }
+get_time() { printf "⏰ $(date +'%r')"; }
 
-get_date() { date +'%m-%d'; }
+get_date() { printf "📅 $(date +'%m-%d')"; }
 
-get_mpd_track() { /usr/bin/mpc -p 6601 current; }
+get_mpd_track() {
+    TRACK=$(mpc -p 6601 current)
+
+    [ "$TRACK" ] && printf "🎵 $TRACK"
+}
 
 get_mpd_remaining() {
-    STATE=$(/usr/bin/mpc -p 6601 | sed -n 2p | awk '{print $1}')
-    TIME_REMAINING=$(/usr/bin/mpc -p 6601 | sed -n 2p | awk '{print $3}')
+    STATE=$(mpc -p 6601 | sed -n 2p | awk '{print $1}')
+    TIME_REMAINING=$(mpc -p 6601 | sed -n 2p | awk '{print $3}')
 
-    if [ "$TIME_REMAINING" = "to" ] || [ "$TIME_REMAINING" = "repeat:" ]; then
-        /usr/bin/printf ""
-    else
-        case "$STATE" in
-            "[paused]") /usr/bin/printf "[PAUSED]" ;;
-            *) /usr/bin/printf "%s" "$TIME_REMAINING" ;;
-        esac
+    if \
+    [ ! "$TIME_REMAINING" = "to" ] \
+    || [ ! "$TIME_REMAINING" = "repeat:" ]; then
+
+        if [ "$STATE" = "[paused]" ]; then
+            printf "⏸️ $SEPARATOR"
+        elif [ ! "$STATE" ]; then
+            printf ""
+        else
+            printf "%s" "⏯️ $TIME_REMAINING $SEPARATOR"
+        fi
     fi
 }
 
@@ -62,14 +81,14 @@ get_vol_perc() {
     VOL_STATE=$(pulsemixer --get-mute)
 
     case "$VOL_STATE" in
-        1) /usr/bin/printf "[MUTED]" ;;
+        1) printf "🔇" ;;
         *)
             if [ "$VOL" -lt 25 ]; then
-                /usr/bin/printf "%s%%" "$VOL"
+                printf "🔈 %s%%" "$VOL"
             elif [ "$VOL" -lt 50 ]; then
-                /usr/bin/printf "$VOL%%"
+                printf "🔉 $VOL%%"
             else
-                /usr/bin/printf "$VOL%%"
+                printf "🔊 $VOL%%"
             fi
         ;;
     esac
@@ -78,17 +97,21 @@ get_vol_perc() {
 get_bat_perc() {
     BAT_LEVEL="$(awk '{ sum += $1 } END { print sum }' \
         /sys/class/power_supply/BAT*/capacity)"
+
     STATUS="$(cat /sys/class/power_supply/BAT*/status)"
 
     case "$STATUS" in
-        Charging) /usr/bin/printf "[C] $BAT_LEVEL%%" ;;
+        Charging) printf "🔌 $BAT_LEVEL%%" ;;
+
         *)
-            if [ "$BAT_LEVEL" -lt 25 ]; then
-                /usr/bin/printf "$BAT_LEVEL%%"
+            if [ ! "$BAT_LEVEL" ]; then
+                printf ""
+            elif [ "$BAT_LEVEL" -lt 25 ]; then
+                printf "🔋 $BAT_LEVEL%%"
             elif [ "$BAT_LEVEL" -lt 50 ]; then
-                /usr/bin/printf "$BAT_LEVEL%%"
+                printf "🔋 $BAT_LEVEL%%"
             else
-                /usr/bin/printf "$BAT_LEVEL%%"
+                printf "🔋 $BAT_LEVEL%%"
             fi
         ;;
     esac
@@ -99,23 +122,25 @@ get_mem_free() {
         | awk '{print $2}') / 1024))
 
     if [ "$MEM_FREE" -gt 2500 ]; then
-        /usr/bin/printf "$MEM_FREE"MB
+        printf "🗄️ $MEM_FREE"MB
     elif [ "$MEM_FREE" -gt 1500 ]; then
-        /usr/bin/printf "$MEM_FREE""MB"
+        printf "🗄️ $MEM_FREE""MB"
     else
-        /usr/bin/printf "$MEM_FREE""MB"
+        printf "🗄️ $MEM_FREE""MB"
     fi
 }
 
 get_temp() {
     TEMP=$(head -c 2 /sys/class/thermal/thermal_zone0/temp)
 
-    if [ "$TEMP" -gt 80 ]; then
-        /usr/bin/printf "$TEMP""C"
+    if [ ! "$TEMP" ]; then
+        printf ""
+    elif [ "$TEMP" -gt 80 ]; then
+        printf "🟥 $TEMP""C"
     elif [ "$TEMP" -gt 60 ]; then
-        /usr/bin/printf "$TEMP""C"
+        printf "🟨 $TEMP""C"
     else
-        /usr/bin/printf "$TEMP""C"
+        printf "🟩 $TEMP""C"
     fi
 }
 
@@ -129,11 +154,11 @@ get_ip_addr() {
         | awk '{print $2}')
 
     if [ "$PRIMARY_INTERFACE_ADDR" ]; then
-        /usr/bin/printf "$PRIMARY_INTERFACE_ADDR"
+        printf "📶 $PRIMARY_INTERFACE_ADDR"
     elif [ "$SECONDARY_INTERFACE_ADDR" ]; then
-        /usr/bin/printf "$SECONDARY_INTERFACE_ADDR"
+        printf "📶 $SECONDARY_INTERFACE_ADDR"
     else
-        /usr/bin/printf "[OFFLINE]"
+        printf "[OFFLINE]"
     fi
 }
 
@@ -158,5 +183,8 @@ case "$DEVICE" in
         done
     ;;
 
-    *) printf ":: \"%s\" not a valid device\n" "$DEVICE"; exit 1 ;;
+    *)
+        printf ":: \"%s\" not a valid device\n" "$DEVICE"
+        exit 1
+    ;;
 esac
