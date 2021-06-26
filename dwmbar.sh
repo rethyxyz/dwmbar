@@ -82,6 +82,7 @@ get_vol_perc() {
 
     case "$VOL_STATE" in
         1) printf "🔇" ;;
+
         *)
             if [ "$VOL" -lt 25 ]; then
                 printf "🔈 %s%%" "$VOL"
