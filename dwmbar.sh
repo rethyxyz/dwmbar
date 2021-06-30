@@ -14,33 +14,44 @@
 # It's recommended to install the statuscolors patch prior to using this
 # script.
 #
-# I also recommend installing Noto Color Emoji to display emojis, as without,
-# you will see squares in their place.
+# Installing Noto Color Emoji (or any related font) to display emojis is
+# recommended, as without, you will see squares in their place. Or, your dwm
+# instance will crash.
 #
 
-########
-# TODO #
-########
+#########################
+# VARIABLE DECLARATIONS #
+#########################
 
-# Figure out the separator issues.
+COUNTER=1
 
+while true; do
+    INTERFACE=$(ip a | grep "$COUNTER: " | awk '{print $2}' | sed "s/://g")
 
+    if [ "$INTERFACE" ]; then
+        [ ! "$INTERFACE" = "lo" ] && INTERFACES+=("$INTERFACE")
+    else
+        break
+    fi
 
-########################
-# VARIABLE DEFINITIONS #
-########################
+    COUNTER=$((COUNTER+1))
+done
 
-# Primary network interface here.
-PRIMARY_INTERFACE="wlp5s0"
-# Secondary network interface here. This is used as backup in-case the first
-# goes down, or if you want another one to be displayed.
-SECONDARY_INTERFACE="enp2s0"
-# Your device type (laptop or desktop) goes here (displays bat info if laptop,
-# doesn't if desktop).
-DEVICE="desktop"
 # This can be any character, as long as your font supports it. Emojis should
 # work, too.
 SEPARATOR="|"
+
+# If valid network interface not found, perma offline status is shown, which
+# should be obvious. Loopback address is skipped outright.
+PRIMARY_INTERFACE="${INTERFACES[0]}"
+SECONDARY_INTERFACE="${INTERFACES[1]}"
+
+# Your device type (laptop or desktop) goes here (displays bat info if laptop,
+# doesn't if desktop). I'm not sure if all devices have this file, so I'll
+# check this in the future (whenever I have access to many laptops).
+[ -e "/sys/class/power_supply/BAT0/type" ] \
+&& DEVICE="laptop" \
+|| DEVICE="desktop"
 
 
 
@@ -48,14 +59,13 @@ SEPARATOR="|"
 # FUNCTIONS #
 #############
 
-get_time() { printf "⏰ $(date +'%r')"; }
-
-get_date() { printf "📅 $(date +'%m-%d')"; }
+get_time() { printf "⏰ %s" "$(date +'%r')"; }
+get_date() { printf "📅 %s" "$(date +'%m-%d')"; }
 
 get_mpd_track() {
     TRACK=$(mpc -p 6601 current)
 
-    [ "$TRACK" ] && printf "🎵 $TRACK"
+    [ "$TRACK" ] && printf "🎵 %s" "$TRACK"
 }
 
 get_mpd_remaining() {
@@ -67,7 +77,7 @@ get_mpd_remaining() {
     || [ ! "$TIME_REMAINING" = "repeat:" ]; then
 
         if [ "$STATE" = "[paused]" ]; then
-            printf "⏸️ $SEPARATOR"
+            printf "⏸️ %s" "$SEPARATOR"
         elif [ ! "$STATE" ]; then
             printf ""
         else
@@ -87,9 +97,9 @@ get_vol_perc() {
             if [ "$VOL" -lt 25 ]; then
                 printf "🔈 %s%%" "$VOL"
             elif [ "$VOL" -lt 50 ]; then
-                printf "🔉 $VOL%%"
+                printf "🔉 %s%%" "$VOL"
             else
-                printf "🔊 $VOL%%"
+                printf "🔊 %s%%" "$VOL"
             fi
         ;;
     esac
@@ -102,17 +112,17 @@ get_bat_perc() {
     STATUS="$(cat /sys/class/power_supply/BAT*/status)"
 
     case "$STATUS" in
-        Charging) printf "🔌 $BAT_LEVEL%%" ;;
+        Charging) printf "🔌 %s%%" "$BAT_LEVEL" ;;
 
         *)
             if [ ! "$BAT_LEVEL" ]; then
                 printf ""
             elif [ "$BAT_LEVEL" -lt 25 ]; then
-                printf "🔋 $BAT_LEVEL%%"
+                printf "🔋 %s%%" "$BAT_LEVEL"
             elif [ "$BAT_LEVEL" -lt 50 ]; then
-                printf "🔋 $BAT_LEVEL%%"
+                printf "🔋 %s%%" "$BAT_LEVEL"
             else
-                printf "🔋 $BAT_LEVEL%%"
+                printf "🔋 %s%%" "$BAT_LEVEL"
             fi
         ;;
     esac
@@ -123,11 +133,11 @@ get_mem_free() {
         | awk '{print $2}') / 1024))
 
     if [ "$MEM_FREE" -gt 2500 ]; then
-        printf "🗄️ $MEM_FREE"MB
+        printf "🗄️ %s"MB "$MEM_FREE"
     elif [ "$MEM_FREE" -gt 1500 ]; then
-        printf "🗄️ $MEM_FREE""MB"
+        printf "🗄️ %s""MB" "$MEM_FREE"
     else
-        printf "🗄️ $MEM_FREE""MB"
+        printf "🗄️ %s""MB" "$MEM_FREE"
     fi
 }
 
@@ -137,11 +147,11 @@ get_temp() {
     if [ ! "$TEMP" ]; then
         printf ""
     elif [ "$TEMP" -gt 80 ]; then
-        printf "🟥 $TEMP""C"
+        printf "🟥 %s""C" "$TEMP"
     elif [ "$TEMP" -gt 60 ]; then
-        printf "🟨 $TEMP""C"
+        printf "🟨 %s""C" "$TEMP"
     else
-        printf "🟩 $TEMP""C"
+        printf "🟩 %s""C" "$TEMP"
     fi
 }
 
@@ -155,9 +165,9 @@ get_ip_addr() {
         | awk '{print $2}')
 
     if [ "$PRIMARY_INTERFACE_ADDR" ]; then
-        printf "📶 $PRIMARY_INTERFACE_ADDR"
+        printf "📶 %s" "$PRIMARY_INTERFACE_ADDR"
     elif [ "$SECONDARY_INTERFACE_ADDR" ]; then
-        printf "📶 $SECONDARY_INTERFACE_ADDR"
+        printf "📶 %s" "$SECONDARY_INTERFACE_ADDR"
     else
         printf "[OFFLINE]"
     fi
