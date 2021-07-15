@@ -19,9 +19,9 @@
 # instance will crash.
 #
 
-#########################
+#+++++++++++++++++++++++#
 # VARIABLE DECLARATIONS #
-#########################
+#+++++++++++++++++++++++#
 
 COUNTER=1
 
@@ -48,16 +48,17 @@ SECONDARY_INTERFACE="${INTERFACES[1]}"
 
 # Your device type (laptop or desktop) goes here (displays bat info if laptop,
 # doesn't if desktop). I'm not sure if all devices have this file, so I'll
-# check this in the future (whenever I have access to many laptops).
+# check this in the future whenever I have access to another laptop of a
+# different make.
 [ -e "/sys/class/power_supply/BAT0/type" ] \
-&& DEVICE="laptop" \
-|| DEVICE="desktop"
+    && DEVICE="laptop" \
+    || DEVICE="desktop"
 
 
 
-#############
+#+++++++++++#
 # FUNCTIONS #
-#############
+#+++++++++++#
 
 get_time() { printf "⏰ %s" "$(date +'%r')"; }
 get_date() { printf "📅 %s" "$(date +'%m-%d')"; }
@@ -175,9 +176,9 @@ get_ip_addr() {
 
 
 
-########
+#++++++#
 # MAIN #
-########
+#++++++#
 
 case "$DEVICE" in
     laptop | Laptop)
